@@ -56,6 +56,15 @@ public class Controller {
     }
 
     @FXML
+    private void clearForm(){
+        txtPostId.setText("");
+        txtUserId.setText("");
+        txtContent.setText("");
+        txtCommentId.setText("");
+        txtCommentSearch.setText("");
+    }
+
+    @FXML
     public void onSearchClicked(ActionEvent event) {
         try {
             long commentId = Long.parseLong(txtCommentSearch.getText());
@@ -73,6 +82,8 @@ public class Controller {
             txtPostId.setText(Long.toString(comment.getPost().getId()));
             txtUserId.setText(Long.toString(comment.getUser().getId()));
 
+
+
         }catch(Exception e){
             showAlert(Alert.AlertType.ERROR, "Error searching comments, please check input value");
         }
@@ -88,7 +99,8 @@ public class Controller {
            String fooResourceUrl
                    = "http://localhost:8080/api/comment/" + commentId;
            restTemplate.delete(fooResourceUrl);
-
+           this.showAlert(Alert.AlertType.INFORMATION,"Deleted comment");
+           this.clearForm();
        }catch(Exception e){
            showAlert(Alert.AlertType.ERROR, "Error deleting comments, please check input value");
        }
@@ -109,6 +121,8 @@ public class Controller {
                  = "http://localhost:8080/api/comment";
          ResponseEntity<Comment> response = restTemplate.postForEntity(fooResourceUrl,c,Comment.class);
          System.out.println("Status code: " + response.getStatusCode());
+         this.showAlert(Alert.AlertType.INFORMATION,"Added comment");
+         this.clearForm();
      } catch(Exception e ){
          showAlert(Alert.AlertType.ERROR, "Error adding comments, please check input value");
      }
@@ -130,6 +144,7 @@ public class Controller {
                     = "http://localhost:8080/api/comment";
             HttpEntity<Comment> requestUpdate = new HttpEntity<>(c);
             template.exchange(fooResourceUrl, HttpMethod.PUT, requestUpdate, Void.class);
+            this.showAlert(Alert.AlertType.INFORMATION,"Updated comment");
         } catch(Exception e ){
             showAlert(Alert.AlertType.ERROR, "Error updating comments, please check input value");
         }
