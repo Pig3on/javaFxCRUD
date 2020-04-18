@@ -1,10 +1,16 @@
 package sample;
 
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+import javafx.util.StringConverter;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -16,10 +22,13 @@ import sample.model.Comment;
 import sample.model.Post;
 import sample.model.User;
 
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.ResourceBundle;
 
-public class Controller {
+public class Controller implements Initializable {
 
 
     @FXML
@@ -29,9 +38,9 @@ public class Controller {
     @FXML
     TextField txtContent;
     @FXML
-    TextField txtPostId;
+    ComboBox<Post> cbPostId;
     @FXML
-    TextField txtUserId;
+    ComboBox<User> cbUserId;
 
 
 
@@ -57,8 +66,8 @@ public class Controller {
 
     @FXML
     private void clearForm(){
-        txtPostId.setText("");
-        txtUserId.setText("");
+        cbPostId.setValue(null);
+        cbUserId.setValue(null);
         txtContent.setText("");
         txtCommentId.setText("");
         txtCommentSearch.setText("");
@@ -79,8 +88,8 @@ public class Controller {
 
             txtCommentId.setText(Long.toString(comment.getId()));
             txtContent.setText(comment.getText());
-            txtPostId.setText(Long.toString(comment.getPost().getId()));
-            txtUserId.setText(Long.toString(comment.getUser().getId()));
+            cbPostId.setValue(comment.getPost());
+            cbUserId.setValue(comment.getUser());
 
 
 
@@ -113,8 +122,8 @@ public class Controller {
          Comment c = new Comment();
 
          c.setText(txtContent.getText());
-         c.setPost(new Post(Long.parseLong(txtPostId.getText())));
-         c.setUser(new User(Long.parseLong(txtUserId.getText())));
+         c.setPost(cbPostId.getValue());
+         c.setUser(cbUserId.getValue());
          RestTemplate restTemplate = this.createRestTemplate(MediaType.APPLICATION_JSON);
 
          String fooResourceUrl
@@ -135,8 +144,8 @@ public class Controller {
             Comment c = new Comment();
             c.setId(Long.parseLong(txtCommentId.getText()));
             c.setText(txtContent.getText());
-            c.setPost(new Post(Long.parseLong(txtPostId.getText())));
-            c.setUser(new User(Long.parseLong(txtUserId.getText())));
+            c.setPost(cbPostId.getValue());
+            c.setUser(cbUserId.getValue());
             RestTemplate template = this.createRestTemplate(MediaType.APPLICATION_JSON);
 
 
@@ -151,5 +160,85 @@ public class Controller {
     }
 
 
+    private void getAllUsers() {
+        try{
+        RestTemplate restTemplate = this.createRestTemplate(MediaType.ALL);
 
+        String fooResourceUrl
+                = "http://localhost:8080/api/user/";
+
+        ResponseEntity<User[]> response = restTemplate.getForEntity(fooResourceUrl, User[].class);
+        System.out.println("Status code: " + response.getStatusCode());
+        User[] users = response.getBody();
+
+        List<User> lectureList = Arrays.asList(users);
+        ObservableList<User> observableList = FXCollections.observableArrayList(lectureList);
+
+        cbUserId.getItems().setAll(observableList);
+
+            cbUserId.setConverter(new StringConverter<User>() {
+
+                @Override
+                public String toString(User object) {
+                    if(object == null) {
+                        return "";
+                    }
+                    return object.getEmail();
+                }
+
+                @Override
+                public User fromString(String string) {
+                    return cbUserId.getItems().stream().filter(ap ->
+                            string.equals(ap.getId())).findFirst().orElse(null);
+                }
+            });
+
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void getAllPosts() {
+        try{
+        RestTemplate restTemplate = this.createRestTemplate(MediaType.ALL);
+
+        String fooResourceUrl
+                = "http://localhost:8080/api/post/";
+
+        ResponseEntity<Post[]> response = restTemplate.getForEntity(fooResourceUrl, Post[].class);
+        System.out.println("Status code: " + response.getStatusCode());
+        Post[] posts = response.getBody();
+
+        List<Post> lectureList = Arrays.asList(posts);
+        ObservableList<Post> observableList = FXCollections.observableArrayList(lectureList);
+
+        cbPostId.getItems().setAll(observableList);
+
+            cbPostId.setConverter(new StringConverter<Post>() {
+
+                @Override
+                public String toString(Post object) {
+                    if(object == null) {
+                        return "";
+                    }
+                    return object.getDescription();
+                }
+
+                @Override
+                public Post fromString(String string) {
+                    return cbPostId.getItems().stream().filter(ap ->
+                            string.equals(ap.getId())).findFirst().orElse(null);
+                }
+            });
+        }catch (Exception e ){
+            e.printStackTrace();
+        }
+    }
+
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        this.getAllUsers();
+        this.getAllPosts();
+    }
 }
