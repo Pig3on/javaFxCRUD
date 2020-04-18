@@ -133,7 +133,7 @@ public class Controller {
     public void onUpdate(ActionEvent event) {
         try {
             Comment c = new Comment();
-            c.setId(Long.parseLong(txtUserId.getText()));
+            c.setId(Long.parseLong(txtCommentId.getText()));
             c.setText(txtContent.getText());
             c.setPost(new Post(Long.parseLong(txtPostId.getText())));
             c.setUser(new User(Long.parseLong(txtUserId.getText())));
